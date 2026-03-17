@@ -3,6 +3,7 @@
 // filter button group, then renders each emission section in sequence.
 // Sections: Travel, Accommodation, Venue Energy, Food & Beverage,
 //           Materials & Waste, Digital, Data Quality.
+import { useState } from 'react';
 import T from '../theme';
 import { SECTIONS, SECTION_ICONS, SC } from '../constants';
 import { DCard } from '../components/ui/DCard';

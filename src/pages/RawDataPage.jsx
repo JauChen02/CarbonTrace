@@ -26,7 +26,7 @@ function RawDataPage({event,onUpdate,stats}){
   const [sortCol,setSortCol]=useState(null);
   const [sortDir,setSortDir]=useState("asc");
   const [dragOver,setDragOver]=useState(false);
-  const fileRef=React.useRef();
+  const fileRef=useRef();
 
   const csvImport=event.csvData||null;
 
