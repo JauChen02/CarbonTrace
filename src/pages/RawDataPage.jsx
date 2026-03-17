@@ -26,6 +26,7 @@ function RawDataPage({event,onUpdate,stats}){
   const [sortCol,setSortCol]=useState(null);
   const [sortDir,setSortDir]=useState("asc");
   const [dragOver,setDragOver]=useState(false);
+  const [csvPreview,setCsvPreview]=useState(null); // {fileName, headers, rows} - pending confirmation
   const fileRef=useRef();
 
   const csvImport=event.csvData||null;
@@ -102,10 +103,16 @@ function RawDataPage({event,onUpdate,stats}){
     const reader=new FileReader();
     reader.onload=e=>{
       const parsed=parseCSV(e.target.result);
-      onUpdate({...event,csvData:{fileName:file.name,uploadedAt:new Date().toISOString(),...parsed}});
+      setCsvPreview({fileName:file.name,...parsed});
     };
     reader.readAsText(file);
   }
+  function confirmCsvImport(){
+    if(!csvPreview) return;
+    onUpdate({...event,csvData:{fileName:csvPreview.fileName,uploadedAt:new Date().toISOString(),headers:csvPreview.headers,rows:csvPreview.rows}});
+    setCsvPreview(null);
+  }
+  function cancelCsvPreview(){setCsvPreview(null);}
   function onDrop(e){e.preventDefault();setDragOver(false);handleFile(e.dataTransfer.files[0]);}
   function removeCSV(){onUpdate({...event,csvData:null});}
 
@@ -482,6 +489,57 @@ function RawDataPage({event,onUpdate,stats}){
               style={{marginLeft:"auto",flexShrink:0,color:T.accent,fontSize:12.5,fontWeight:600,textDecoration:"none",whiteSpace:"nowrap"}}>
               View official source →
             </a>
+          </div>
+        </div>
+      )}
+
+      {/* ════ CSV PREVIEW MODAL ════ */}
+      {csvPreview && (
+        <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.5)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:100}}>
+          <div style={{background:T.surface,borderRadius:12,width:"90%",maxWidth:800,maxHeight:"80vh",display:"flex",flexDirection:"column",boxShadow:"0 20px 40px rgba(0,0,0,0.3)"}}>
+            {/* Modal header */}
+            <div style={{padding:"18px 24px",borderBottom:`1px solid ${T.border}`,display:"flex",justifyContent:"space-between",alignItems:"center"}}>
+              <div>
+                <div style={{fontSize:16,fontWeight:700,color:T.text,marginBottom:2}}>Preview CSV Import</div>
+                <div style={{fontSize:13,color:T.textMid}}>{csvPreview.fileName} - {csvPreview.rows.length} rows, {csvPreview.headers.length} columns</div>
+              </div>
+              <button onClick={cancelCsvPreview} style={{background:"none",border:"none",fontSize:20,color:T.textMid,cursor:"pointer",padding:4}}>x</button>
+            </div>
+            
+            {/* Preview table */}
+            <div style={{flex:1,overflow:"auto",padding:"16px 24px"}}>
+              <div style={{border:`1px solid ${T.border}`,borderRadius:8,overflow:"hidden"}}>
+                <table style={{width:"100%",borderCollapse:"collapse",fontSize:12.5}}>
+                  <thead>
+                    <tr style={{background:T.bg}}>
+                      {csvPreview.headers.map(h=>(
+                        <th key={h} style={{padding:"10px 12px",textAlign:"left",fontWeight:600,color:T.textMid,borderBottom:`1px solid ${T.border}`,whiteSpace:"nowrap"}}>{h}</th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {csvPreview.rows.slice(0,10).map((row,i)=>(
+                      <tr key={i} style={{borderBottom:`1px solid ${T.border}`,background:i%2===0?"transparent":T.bg}}>
+                        {csvPreview.headers.map(h=>(
+                          <td key={h} style={{padding:"9px 12px",color:T.text,maxWidth:200,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{row[h]||"-"}</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {csvPreview.rows.length > 10 && (
+                <div style={{textAlign:"center",padding:"12px",color:T.textLight,fontSize:12}}>
+                  Showing first 10 of {csvPreview.rows.length} rows
+                </div>
+              )}
+            </div>
+            
+            {/* Modal footer */}
+            <div style={{padding:"16px 24px",borderTop:`1px solid ${T.border}`,display:"flex",justifyContent:"flex-end",gap:10}}>
+              <button className="btn-g" onClick={cancelCsvPreview} style={{fontSize:13,padding:"10px 20px"}}>Cancel</button>
+              <button className="btn-p" onClick={confirmCsvImport} style={{fontSize:13,padding:"10px 20px"}}>Confirm Import</button>
+            </div>
           </div>
         </div>
       )}
