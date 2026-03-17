@@ -5,6 +5,7 @@
 import T from '../theme';
 import { calcEm } from '../utils/calcEm';
 import { HOTEL_KG, EF } from '../constants';
+import { Avatar } from '../components/ui';
 import {
   PieChart, Pie, Cell, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, Legend

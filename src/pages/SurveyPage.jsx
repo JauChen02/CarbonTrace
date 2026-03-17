@@ -4,6 +4,8 @@
 // On submit, calls onSubmit(participantId, data) which updates the event in App state.
 import { useState } from 'react';
 import T from '../theme';
+import G from '../styles';
+import Card from '../components/ui/Card';
 import { EF } from '../constants';
 import { calcEm } from '../utils/calcEm';
 

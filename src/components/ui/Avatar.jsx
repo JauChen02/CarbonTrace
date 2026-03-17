@@ -1,4 +1,5 @@
 // Circular avatar showing up to 2 initials, used in the participants table.
+import T from '../../theme';
 
 function Avatar({name,size=30}){
   const i=name.split(" ").map(w=>w[0]).join("").slice(0,2).toUpperCase();

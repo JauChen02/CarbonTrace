@@ -4,6 +4,8 @@
 // a one-click copy button.
 import { useState } from 'react';
 import T from '../theme';
+import Card from '../components/ui/Card';
+import { Avatar } from '../components/ui';
 
 // ─── Invite Tab ───────────────────────────────────────────────────────────────
 function InviteTab({event,onUpdate}){

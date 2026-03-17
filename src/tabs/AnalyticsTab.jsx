@@ -6,8 +6,9 @@
 import { useState } from 'react';
 import T from '../theme';
 import { EF, HOTEL_KG } from '../constants';
+import Card from '../components/ui/Card';
 import {
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell
+  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, Legend
 } from 'recharts';
 
 // ─── Analytics Tab ────────────────────────────────────────────────────────────
