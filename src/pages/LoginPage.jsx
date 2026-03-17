@@ -2,6 +2,7 @@
 // Pre-filled with the demo account for convenience.
 import { useState } from 'react';
 import T from '../theme';
+import G from '../styles';
 import { USERS } from '../data/seed';
 
 function LoginPage({onLogin}){
