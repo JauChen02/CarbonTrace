@@ -35,6 +35,16 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
       title={breadcrumb}
       actions={<StatusBadge status={event.status}/>}>
 
+      {!isRawData && (
+        <div style={{position:"sticky",top:57,zIndex:30,background:T.surface}}>
+          <div style={{borderBottom:`1px solid ${T.border}`,display:"flex",paddingLeft:30}}>
+            {TABS.map(([k,l])=>(
+              <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)} style={k==="report"?{color:tab==="report"?T.accent:T.textMid}:{}}>{l}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {!isRawData && tab!=="report" && (
         <div className="fu" style={{padding:"28px 30px 0"}}>
           <p style={{fontSize:13.5,color:T.textMid,marginBottom:4}}>📍 {event.location} &nbsp;·&nbsp; 🗓 {event.date}{event.endDate?` → ${event.endDate}`:""}</p>
@@ -45,16 +55,6 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
             <KpiCard label="Response Rate"    value={`${stats.responseRate.toFixed(0)}%`}      accent={stats.responseRate>70?"#16a34a":"#f59e0b"}/>
             <KpiCard label="Actual CO₂"       value={`${stats.totalActual.toFixed(0)} kg`}    sub="from valid entries"/>
             <KpiCard label="Extrapolated CO₂" value={`${(stats.extrapolated/1000).toFixed(2)}t`} sub="full event est." accent={T.accent}/>
-          </div>
-        </div>
-      )}
-
-      {!isRawData && (
-        <div style={tab==="report"?{}:{padding:"0 30px"}}>
-          <div style={{borderBottom:`1px solid ${T.border}`,display:"flex",paddingLeft:tab==="report"?30:8,background:T.surface,position:tab==="report"?"sticky":"static",top:tab==="report"?57:0,zIndex:30}}>
-            {TABS.map(([k,l])=>(
-              <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)} style={k==="report"?{color:tab==="report"?T.accent:T.textMid}:{}}>{l}</button>
-            ))}
           </div>
         </div>
       )}
