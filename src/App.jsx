@@ -13,6 +13,9 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import EventPage from './pages/EventPage';
 import SurveyPage from './pages/SurveyPage';
+import T from './theme';
+import G from './styles';
+import Card from './components/ui/Card';
 
 export default function App(){
   const [user,setUser]=useState(null);
