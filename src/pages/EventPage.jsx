@@ -31,40 +31,48 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
   );
 
   return(
-    <Shell user={user} active="event" activeEventId={event.id} events={events} onNav={onNav} onOpenEvent={onOpenEvent} onLogout={onLogout} noPad={tab==="report"||isRawData}
+    <Shell user={user} active="event" activeEventId={event.id} events={events} onNav={onNav} onOpenEvent={onOpenEvent} onLogout={onLogout} noPad
       title={breadcrumb}
       actions={<StatusBadge status={event.status}/>}>
 
+      {/* Shared header for all tabs - event info and actions */}
       {!isRawData && (
-        <div style={{position:"sticky",top:57,zIndex:30,background:T.surface}}>
-          <div style={{borderBottom:`1px solid ${T.border}`,display:"flex",paddingLeft:30}}>
+        <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"20px 30px 16px"}}>
+          <div style={{display:"flex",alignItems:"center",gap:24,fontSize:13,color:T.textMid,marginBottom:12}}>
+            {event.date&&<span>📅 {event.date}{event.endDate?` - ${event.endDate}`:""}</span>}
+            {event.location&&<span>📍 {event.location}</span>}
+            <span>👥 {stats.total} Participants</span>
+          </div>
+          {event.description&&<p style={{fontSize:13.5,color:T.textLight,marginBottom:14}}>{event.description}</p>}
+          <div style={{display:"flex",gap:10}}>
+            <button className="btn-g" onClick={()=>setTab("rawdata")} style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
+              📄 View Raw Data
+            </button>
+            <button className="btn-p" style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
+              ⬇ Download PDF Report
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Tab navigation - always in the same position */}
+      {!isRawData && (
+        <div style={{position:"sticky",top:57,zIndex:30,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
+          <div style={{display:"flex",paddingLeft:30}}>
             {TABS.map(([k,l])=>(
-              <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)} style={k==="report"?{color:tab==="report"?T.accent:T.textMid}:{}}>{l}</button>
+              <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)}>{l}</button>
             ))}
           </div>
         </div>
       )}
 
-      {!isRawData && tab!=="report" && (
-        <div className="fu" style={{padding:"28px 30px 0"}}>
-          <p style={{fontSize:13.5,color:T.textMid,marginBottom:4}}>📍 {event.location} &nbsp;·&nbsp; 🗓 {event.date}{event.endDate?` → ${event.endDate}`:""}</p>
-          {event.description&&<p style={{fontSize:13.5,color:T.textLight,marginBottom:20}}>{event.description}</p>}
-          <div style={{display:"flex",gap:14,marginBottom:24}}>
-            <KpiCard label="Invited"          value={stats.total}/>
-            <KpiCard label="Valid Responses"   value={`${stats.responders}/${stats.total}`}   sub="complete entries" accent={T.accent}/>
-            <KpiCard label="Response Rate"    value={`${stats.responseRate.toFixed(0)}%`}      accent={stats.responseRate>70?"#16a34a":"#f59e0b"}/>
-            <KpiCard label="Actual CO₂"       value={`${stats.totalActual.toFixed(0)} kg`}    sub="from valid entries"/>
-            <KpiCard label="Extrapolated CO₂" value={`${(stats.extrapolated/1000).toFixed(2)}t`} sub="full event est." accent={T.accent}/>
-          </div>
-        </div>
-      )}
-
-      {isRawData        && <RawDataPage event={event} stats={stats} onUpdate={onUpdate}/>}
-      {!isRawData && tab==="report"   && <CarbonReportTab event={event} stats={stats} onUpdate={onUpdate} onViewRaw={()=>setTab("rawdata")}/>}
+      {/* Tab content */}
+      {isRawData && <RawDataPage event={event} stats={stats} onUpdate={onUpdate}/>}
+      {!isRawData && tab==="report" && <CarbonReportTab event={event} stats={stats} onUpdate={onUpdate} onViewRaw={()=>setTab("rawdata")}/>}
       {!isRawData && tab==="overview" && <div style={{padding:"24px 30px"}}><OverviewTab event={event} stats={stats}/></div>}
-      {!isRawData && tab==="participants"&&<div style={{padding:"24px 30px"}}><ParticipantsTab event={event} onUpdate={onUpdate} stats={stats}/></div>}
-      {!isRawData && tab==="invite"   && <div style={{padding:"24px 30px"}}><InviteTab event={event} onUpdate={onUpdate}/></div>}
-      {!isRawData && tab==="analytics"&& <div style={{padding:"24px 30px"}}><AnalyticsTab event={event} stats={stats}/></div>}
+      {!isRawData && tab==="participants" && <div style={{padding:"24px 30px"}}><ParticipantsTab event={event} onUpdate={onUpdate} stats={stats}/></div>}
+      {!isRawData && tab==="invite" && <div style={{padding:"24px 30px"}}><InviteTab event={event} onUpdate={onUpdate}/></div>}
+      {!isRawData && tab==="analytics" && <div style={{padding:"24px 30px"}}><AnalyticsTab event={event} stats={stats}/></div>}
     </Shell>
   );
 }

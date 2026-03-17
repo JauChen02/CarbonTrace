@@ -32,38 +32,6 @@ function CarbonReportTab({event,stats,onUpdate,onViewRaw}){
 
   return(
     <div style={{background:T.bg,minHeight:"100%",fontFamily:"'DM Sans',sans-serif",color:T.text}}>
-
-      {/* ── Report Header ── */}
-      <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"28px 40px 24px"}}>
-        <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:18}}>
-          <div>
-            <div style={{display:"flex",alignItems:"center",gap:12,marginBottom:6}}>
-              <span style={{fontSize:24,fontWeight:800,letterSpacing:-0.5,color:T.text}}>{event.name}</span>
-              <span style={{background:T.accentLight,color:T.accent,border:`1px solid rgba(15,118,110,0.25)`,padding:"3px 10px",borderRadius:20,fontSize:11.5,fontWeight:600}}>Carbon Report</span>
-            </div>
-            <div style={{color:T.textMid,fontSize:13.5}}>{event.description}</div>
-          </div>
-          <div style={{display:"flex",alignItems:"center",gap:8,background:T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:"8px 14px"}}>
-            <div style={{width:22,height:22,borderRadius:5,background:"linear-gradient(135deg,#14b8a6,#0f766e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11}}>🌍</div>
-            <div style={{fontSize:11,color:T.textLight,letterSpacing:0.5}}>Powered by</div>
-            <span style={{color:T.text,fontWeight:700,fontSize:13}}>CarbonTrace</span>
-          </div>
-        </div>
-        <div style={{display:"flex",alignItems:"center",gap:24,fontSize:13,color:T.textMid}}>
-          {event.date&&<span>🗓 {event.date}{event.endDate?` – ${event.endDate}`:""}</span>}
-          {event.location&&<span>📍 {event.location}</span>}
-          <span>👥 {stats.total} Participants</span>
-        </div>
-        <div style={{display:"flex",gap:10,marginTop:18}}>
-          <button className="btn-g" onClick={onViewRaw} style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
-            📄 View Raw Data
-          </button>
-          <button className="btn-p" style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
-            ⬇ Download PDF Report
-          </button>
-        </div>
-      </div>
-
       <div style={{padding:"32px 40px",maxWidth:1200}}>
 
         {/* ── Executive Summary ── */}
