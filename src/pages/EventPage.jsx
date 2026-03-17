@@ -24,7 +24,9 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
   const breadcrumb=(
     <span style={{display:"flex",alignItems:"center",gap:8}}>
       <button className="btn-g" onClick={isRawData?()=>setTab("report"):onBack} style={{padding:"5px 12px",fontSize:12.5}}>← Back</button>
-      <span style={{color:T.textLight}}>/ Events /</span>
+      <span style={{color:T.textLight}}>/</span>
+      <button onClick={()=>onNav("dashboard")} style={{background:"none",border:"none",cursor:"pointer",padding:0,color:T.accent,fontWeight:500,fontSize:14}}>Events</button>
+      <span style={{color:T.textLight}}>/</span>
       <button onClick={()=>isRawData&&setTab("report")} style={{background:"none",border:"none",cursor:isRawData?"pointer":"default",padding:0,color:isRawData?T.accent:T.text,fontWeight:600,fontSize:15}}>{event.name}</button>
       {isRawData&&<><span style={{color:T.textLight}}>/</span><span style={{color:T.text,fontWeight:600}}>Raw Data</span></>}
     </span>
