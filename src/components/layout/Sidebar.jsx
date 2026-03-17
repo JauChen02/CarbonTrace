@@ -6,6 +6,7 @@ import T from '../../theme';
 
 function Sidebar({user,active,activeEventId,events,onNav,onOpenEvent,onLogout}){
   const [eventsOpen,setEventsOpen]=useState(true);
+  const [profileOpen,setProfileOpen]=useState(false);
   const isEventActive=active==="event";
   return(
     <div style={{width:220,background:T.sidebar,display:"flex",flexDirection:"column",height:"100vh",position:"fixed",left:0,top:0,zIndex:50,overflowY:"auto"}}>
@@ -44,8 +45,11 @@ function Sidebar({user,active,activeEventId,events,onNav,onOpenEvent,onLogout}){
           </div>
         )}
       </nav>
-      <div style={{padding:"14px 14px",borderTop:"1px solid rgba(255,255,255,0.06)"}}>
-        <div style={{display:"flex",alignItems:"center",gap:9}}>
+      <div style={{padding:"14px 14px",borderTop:"1px solid rgba(255,255,255,0.06)",position:"relative"}}>
+        <button
+          onClick={()=>setProfileOpen(o=>!o)}
+          style={{display:"flex",alignItems:"center",gap:9,width:"100%",background:"transparent",border:"none",cursor:"pointer",padding:0,textAlign:"left"}}
+        >
           <div style={{width:32,height:32,borderRadius:"50%",background:"linear-gradient(135deg,#14b8a6,#0f766e)",display:"flex",alignItems:"center",justifyContent:"center",fontSize:11,color:"white",fontWeight:700}}>
             {user.name.split(" ").map(w=>w[0]).join("").slice(0,2)}
           </div>
@@ -53,8 +57,25 @@ function Sidebar({user,active,activeEventId,events,onNav,onOpenEvent,onLogout}){
             <div style={{color:"white",fontSize:12.5,fontWeight:600,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{user.name}</div>
             <div style={{color:T.sidebarText,fontSize:11}}>Event Manager</div>
           </div>
-          <button onClick={onLogout} title="Logout" style={{background:"none",border:"none",color:T.sidebarText,cursor:"pointer",fontSize:16,padding:2}}>&#x21E5;</button>
-        </div>
+          <span style={{fontSize:10,opacity:0.5,transform:profileOpen?"rotate(180deg)":"rotate(0deg)",transition:"transform 0.2s",display:"inline-block",color:T.sidebarText}}>&#x25B2;</span>
+        </button>
+        {profileOpen&&(
+          <div style={{position:"absolute",bottom:"100%",left:10,right:10,marginBottom:8,background:T.card,borderRadius:8,boxShadow:"0 4px 20px rgba(0,0,0,0.25)",border:`1px solid ${T.border}`,overflow:"hidden"}}>
+            <div style={{padding:"12px 14px",borderBottom:`1px solid ${T.border}`}}>
+              <div style={{fontSize:12.5,fontWeight:600,color:T.text}}>{user.name}</div>
+              <div style={{fontSize:11,color:T.textMid}}>{user.email}</div>
+            </div>
+            <button
+              onClick={onLogout}
+              style={{width:"100%",padding:"10px 14px",background:"transparent",border:"none",cursor:"pointer",textAlign:"left",fontSize:12.5,color:"#ef4444",display:"flex",alignItems:"center",gap:8,transition:"background 0.15s"}}
+              onMouseEnter={e=>e.currentTarget.style.background="rgba(239,68,68,0.1)"}
+              onMouseLeave={e=>e.currentTarget.style.background="transparent"}
+            >
+              <span style={{fontSize:14}}>&#x21E5;</span>
+              Logout
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
