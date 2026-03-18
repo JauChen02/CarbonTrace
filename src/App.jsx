@@ -17,12 +17,30 @@ import T from './theme';
 import G from './styles';
 import Card from './components/ui/Card';
 
+const STORAGE_KEY = "carbontrace_events";
+
+function loadEvents() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored) {
+      const parsed = JSON.parse(stored);
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+  } catch (e) { /* ignore parse errors */ }
+  return SEED_EVENTS;
+}
+
 export default function App(){
   const [user,setUser]=useState(null);
   // Single atomic nav state — avoids race between view + selId
   const [nav,setNav]=useState({view:"login",eventId:null});
-  const [events,setEvents]=useState(SEED_EVENTS);
+  const [events,setEvents]=useState(loadEvents);
   const [surveyToken,setSurveyToken]=useState(null);
+
+  // Persist events to localStorage whenever they change
+  useEffect(()=>{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+  },[events]);
 
   useEffect(()=>{
     const h=window.location.hash;
