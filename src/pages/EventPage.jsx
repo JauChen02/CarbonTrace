@@ -16,7 +16,8 @@ import AnalyticsTab from '../tabs/AnalyticsTab';
 
 function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events}){
   const [tab,setTab]=useState("report");
-  const stats=computeStats(event);
+  const [dataSource,setDataSource]=useState("all"); // "all" | "survey" | "csv"
+  const stats=computeStats(event, dataSource);
   const TABS=[["report","Carbon Report"],["overview","Overview"],["participants","Participants"],["invite","Send Invites"],["analytics","Analytics"]];
 
   const isRawData=tab==="rawdata";
@@ -70,11 +71,11 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
 
       {/* Tab content */}
       {isRawData && <RawDataPage event={event} stats={stats} onUpdate={onUpdate}/>}
-      {!isRawData && tab==="report" && <CarbonReportTab event={event} stats={stats} onUpdate={onUpdate} onViewRaw={()=>setTab("rawdata")}/>}
-      {!isRawData && tab==="overview" && <div style={{padding:"24px 30px"}}><OverviewTab event={event} stats={stats}/></div>}
+      {!isRawData && tab==="report" && <CarbonReportTab event={event} stats={stats} onUpdate={onUpdate} onViewRaw={()=>setTab("rawdata")} dataSource={dataSource} setDataSource={setDataSource}/>}
+      {!isRawData && tab==="overview" && <div style={{padding:"24px 30px"}}><OverviewTab event={event} stats={stats} dataSource={dataSource} setDataSource={setDataSource}/></div>}
       {!isRawData && tab==="participants" && <div style={{padding:"24px 30px"}}><ParticipantsTab event={event} onUpdate={onUpdate} stats={stats}/></div>}
       {!isRawData && tab==="invite" && <div style={{padding:"24px 30px"}}><InviteTab event={event} onUpdate={onUpdate}/></div>}
-      {!isRawData && tab==="analytics" && <div style={{padding:"24px 30px"}}><AnalyticsTab event={event} stats={stats}/></div>}
+      {!isRawData && tab==="analytics" && <div style={{padding:"24px 30px"}}><AnalyticsTab event={event} stats={stats} dataSource={dataSource} setDataSource={setDataSource}/></div>}
     </Shell>
   );
 }

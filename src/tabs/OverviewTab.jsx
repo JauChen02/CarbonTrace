@@ -12,13 +12,55 @@ import {
 } from 'recharts';
 
 // ─── Overview Tab ─────────────────────────────────────────────────────────────
-function OverviewTab({event,stats}){
+function OverviewTab({event,stats,dataSource,setDataSource}){
   const CLR=["#0d9488","#2563eb","#f59e0b","#ef4444","#8b5cf6","#10b981"];
   const pieData=Object.entries(stats.tMap).map(([name,v],i)=>({name,value:+v.emissions.toFixed(1),count:v.count,color:CLR[i%CLR.length]}));
   const confirmed=+stats.totalActual.toFixed(1);
   const extrapolatedOnly=+Math.max(0,stats.extrapolated-stats.totalActual).toFixed(1);
+  
+  const hasCSV = stats.csvStats?.hasData;
+  const hasSurvey = stats.surveyStats?.count > 0 || stats.surveyStats?.total > 0;
+  const DATA_SOURCES = [
+    {key:"all", label:"All Data"},
+    {key:"survey", label:"Survey Only"},
+    {key:"csv", label:"CSV Import"},
+  ];
+  
   return(
     <div>
+      {/* Data Source Filter */}
+      <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:16}}>
+        <span style={{fontSize:13,color:T.textMid,fontWeight:500}}>Data Source:</span>
+        <div style={{display:"flex",gap:4,background:T.bg,border:`1px solid ${T.border}`,borderRadius:8,padding:3}}>
+          {DATA_SOURCES.map(src => {
+            const isActive = dataSource === src.key;
+            const isDisabled = (src.key === "csv" && !hasCSV) || (src.key === "survey" && !hasSurvey);
+            return (
+              <button
+                key={src.key}
+                onClick={() => !isDisabled && setDataSource(src.key)}
+                disabled={isDisabled}
+                style={{
+                  background: isActive ? T.accent : "transparent",
+                  color: isActive ? "#fff" : isDisabled ? T.textLight : T.textMid,
+                  border: "none",
+                  borderRadius: 6,
+                  padding: "6px 12px",
+                  fontSize: 12,
+                  fontWeight: isActive ? 600 : 400,
+                  cursor: isDisabled ? "not-allowed" : "pointer",
+                  opacity: isDisabled ? 0.5 : 1,
+                }}
+              >
+                {src.label}
+              </button>
+            );
+          })}
+        </div>
+        {dataSource !== "all" && (
+          <span style={{fontSize:11,color:"#92400e",background:"#fef3c7",padding:"3px 8px",borderRadius:4}}>Filtered</span>
+        )}
+      </div>
       {stats.total>stats.responders&&(
         <div style={{background:"#fffbeb",border:"1px solid #fde68a",borderRadius:10,padding:"13px 18px",marginBottom:20,display:"flex",gap:12,alignItems:"flex-start"}}>
           <span style={{fontSize:17}}>⚡</span>

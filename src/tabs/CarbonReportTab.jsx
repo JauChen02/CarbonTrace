@@ -18,7 +18,7 @@ import DigitalSection from '../sections/DigitalSection';
 import PlaceholderSection from '../sections/PlaceholderSection';
 import DataQualitySection from '../sections/DataQualitySection';
 
-function CarbonReportTab({event,stats,onUpdate,onViewRaw}){
+function CarbonReportTab({event,stats,onUpdate,onViewRaw,dataSource,setDataSource}){
   const [activeSection,setActiveSection]=useState("All Sections");
 
   const totalCO2_t=(stats.extrapolated/1000).toFixed(2);
@@ -27,12 +27,66 @@ function CarbonReportTab({event,stats,onUpdate,onViewRaw}){
   const hotelPct=stats.totalActual>0?((stats.hotelTotal/stats.totalActual)*100).toFixed(0):"—";
   const largestContrib=parseFloat(transportPct)>=parseFloat(hotelPct)?"Transport":"Accommodation";
   const largestPct=Math.max(parseFloat(transportPct)||0,parseFloat(hotelPct)||0);
+  
+  const hasCSV = stats.csvStats?.hasData;
+  const hasSurvey = stats.surveyStats?.count > 0 || stats.surveyStats?.total > 0;
+  
+  const DATA_SOURCES = [
+    {key:"all", label:"All Data", desc:"Survey + CSV"},
+    {key:"survey", label:"Survey Only", desc:`${stats.surveyStats?.count || 0} responses`},
+    {key:"csv", label:"CSV Import", desc:hasCSV ? `${stats.csvStats?.count || 0} entries` : "No data"},
+  ];
 
   const showSection=(name)=>activeSection==="All Sections"||activeSection===name;
 
   return(
     <div style={{background:T.bg,minHeight:"100%",fontFamily:"'DM Sans',sans-serif",color:T.text}}>
       <div style={{padding:"32px 40px",maxWidth:1200}}>
+
+        {/* ── Data Source Filter ── */}
+        <div style={{display:"flex",alignItems:"center",justifyContent:"space-between",marginBottom:20}}>
+          <div style={{display:"flex",alignItems:"center",gap:8}}>
+            <span style={{fontSize:13,color:T.textMid,fontWeight:500}}>Data Source:</span>
+            <div style={{display:"flex",gap:4,background:T.bg,border:`1px solid ${T.border}`,borderRadius:8,padding:3}}>
+              {DATA_SOURCES.map(src => {
+                const isActive = dataSource === src.key;
+                const isDisabled = (src.key === "csv" && !hasCSV) || (src.key === "survey" && !hasSurvey);
+                return (
+                  <button
+                    key={src.key}
+                    onClick={() => !isDisabled && setDataSource(src.key)}
+                    disabled={isDisabled}
+                    style={{
+                      background: isActive ? T.accent : "transparent",
+                      color: isActive ? "#fff" : isDisabled ? T.textLight : T.textMid,
+                      border: "none",
+                      borderRadius: 6,
+                      padding: "6px 12px",
+                      fontSize: 12.5,
+                      fontWeight: isActive ? 600 : 400,
+                      cursor: isDisabled ? "not-allowed" : "pointer",
+                      opacity: isDisabled ? 0.5 : 1,
+                      transition: "all 0.15s",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 1
+                    }}
+                  >
+                    <span>{src.label}</span>
+                    <span style={{fontSize:10,opacity:0.8}}>{src.desc}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          {dataSource !== "all" && (
+            <div style={{display:"flex",alignItems:"center",gap:6,background:"#fef3c7",border:"1px solid #fcd34d",borderRadius:6,padding:"6px 12px"}}>
+              <span style={{fontSize:12}}>⚠️</span>
+              <span style={{fontSize:12,color:"#92400e"}}>Filtered view: showing {dataSource === "survey" ? "survey" : "CSV"} data only</span>
+            </div>
+          )}
+        </div>
 
         {/* ── Executive Summary ── */}
         <DCard style={{marginBottom:28,padding:"28px 28px"}}>
@@ -64,12 +118,12 @@ function CarbonReportTab({event,stats,onUpdate,onViewRaw}){
           {[
             {icon:"🔑",title:"Key Drivers Analysis",accent:"#d97706",content:
               stats.submitted.length>0
-                ?`${largestContrib} accounted for ${largestPct}% of total emissions, making delegate travel the dominant source of the event's carbon footprint. ${stats.responders} of ${stats.total} participants submitted survey responses; emissions for ${stats.total-stats.responders} incomplete entries have been extrapolated using the average emission profile of valid respondents. All figures are derived exclusively from first-party survey data — CSV imports are excluded from calculations.`
-                :"No participant data submitted yet. Invite participants to complete the emissions survey to generate a key drivers analysis."
+                ?`${largestContrib} accounted for ${largestPct}% of total emissions, making delegate travel the dominant source of the event's carbon footprint. ${stats.responders} of ${stats.total} participants have valid data entries. ${dataSource === "all" ? "Data includes both survey responses and CSV imports." : dataSource === "survey" ? "Showing survey data only." : "Showing CSV import data only."}`
+                :"No participant data available. Invite participants to complete the emissions survey or import CSV data."
             },
             {icon:"⚡",title:"Emission Factors Source",accent:T.accent,content:"All emission factors used in this report are sourced from DEFRA 2025 greenhouse gas conversion factors for company reporting.",link:"View DEFRA 2025 Conversion Factors →"},
             {icon:"⬇",title:"Data Transparency",accent:T.accent,content:"For full transparency and audit purposes, the complete raw participant data used in this report is available for download and review.",link:"View & Download Raw Data →",onLinkClick:onViewRaw},
-            {icon:"🔄",title:"Data Quality & Methodology",accent:"#2563eb",content:<span>This report is based on <strong style={{color:T.text}}>{stats.responders} valid survey responses</strong> out of {stats.total} total registrations. Emissions for {stats.total-stats.responders} incomplete entries have been extrapolated using the average emission profile of valid respondents. All calculations use emission factors from DEFRA 2025 guidelines and are subject to audit verification. <span style={{display:"inline-flex",alignItems:"center",gap:5,background:T.accentLight,color:T.accent,border:`1px solid rgba(15,118,110,0.2)`,borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>Survey data only</span> CSV imports are excluded from all calculations.</span>},
+            {icon:"🔄",title:"Data Quality & Methodology",accent:"#2563eb",content:<span>This report is based on <strong style={{color:T.text}}>{stats.responders} valid data entries</strong> out of {stats.total} total. {dataSource === "all" && hasCSV && hasSurvey ? <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:"#dbeafe",color:"#1d4ed8",border:"1px solid rgba(37,99,235,0.2)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>Combined data</span> Includes {stats.surveyStats?.count || 0} survey responses + {stats.csvStats?.count || 0} CSV entries.</> : dataSource === "survey" ? <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:T.accentLight,color:T.accent,border:"1px solid rgba(15,118,110,0.2)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>Survey only</span> CSV imports excluded.</> : <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:"#fef3c7",color:"#92400e",border:"1px solid rgba(251,191,36,0.3)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>CSV only</span> Survey data excluded.</>}</span>},
           ].map(panel=>(
             <div key={panel.title} style={{background:T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:"18px 22px",marginBottom:12}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
