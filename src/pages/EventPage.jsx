@@ -37,8 +37,19 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
       title={breadcrumb}
       actions={<StatusBadge status={event.status}/>}>
 
-      {/* Shared header for all tabs - event info and actions */}
+      {/* Tab navigation - always in the same position */}
       {!isRawData && (
+        <div style={{position:"sticky",top:57,zIndex:30,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
+          <div style={{display:"flex",paddingLeft:30}}>
+            {TABS.map(([k,l])=>(
+              <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)}>{l}</button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Shared header for non-report tabs - event info and actions */}
+      {!isRawData && tab!=="report" && (
         <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"20px 30px 16px"}}>
           <div style={{display:"flex",alignItems:"center",gap:24,fontSize:13,color:T.textMid,marginBottom:12}}>
             {event.date&&<span>📅 {event.date}{event.endDate?` - ${event.endDate}`:""}</span>}
@@ -53,17 +64,6 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
             <button className="btn-p" style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
               ⬇ Download PDF Report
             </button>
-          </div>
-        </div>
-      )}
-
-      {/* Tab navigation - always in the same position */}
-      {!isRawData && (
-        <div style={{position:"sticky",top:57,zIndex:30,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
-          <div style={{display:"flex",paddingLeft:30}}>
-            {TABS.map(([k,l])=>(
-              <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)}>{l}</button>
-            ))}
           </div>
         </div>
       )}
