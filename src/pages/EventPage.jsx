@@ -39,7 +39,7 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
 
       {/* Tab navigation - always in the same position */}
       {!isRawData && (
-        <div style={{position:"sticky",top:0,zIndex:30,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
+        <div style={{position:"sticky",top:57,zIndex:30,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
           <div style={{display:"flex",paddingLeft:30}}>
             {TABS.map(([k,l])=>(
               <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)}>{l}</button>

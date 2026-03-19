@@ -12,7 +12,7 @@ function Shell({user,active,activeEventId,events,onNav,onOpenEvent,onLogout,titl
       <Sidebar user={user} active={active} activeEventId={activeEventId} events={events||[]} onNav={onNav} onOpenEvent={onOpenEvent||function(){}} onLogout={onLogout}/>
       <div style={{marginLeft:220,flex:1,display:"flex",flexDirection:"column",minHeight:"100vh"}}>
         <Topbar title={title} actions={actions} noBorder={noBorder}/>
-        <main style={{flex:1,padding:noPad?"0":"28px 30px",overflowY:"auto"}}>{children}</main>
+        <main style={{flex:1,padding:noPad?"0":"28px 30px"}}>{children}</main>
       </div>
     </div>
   );
