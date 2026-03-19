@@ -33,13 +33,13 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
   );
 
   return(
-    <Shell user={user} active="event" activeEventId={event.id} events={events} onNav={onNav} onOpenEvent={onOpenEvent} onLogout={onLogout} noPad noBorder={!isRawData}
+    <Shell user={user} active="event" activeEventId={event.id} events={events} onNav={onNav} onOpenEvent={onOpenEvent} onLogout={onLogout} noPad
       title={breadcrumb}
       actions={<StatusBadge status={event.status}/>}>
 
       {/* Tab navigation - always in the same position */}
       {!isRawData && (
-        <div style={{position:"sticky",top:57,zIndex:30,background:T.surface,borderTop:`1px solid ${T.border}`,borderBottom:`1px solid ${T.border}`}}>
+        <div style={{position:"sticky",top:0,zIndex:30,background:T.surface,borderBottom:`1px solid ${T.border}`}}>
           <div style={{display:"flex",paddingLeft:30}}>
             {TABS.map(([k,l])=>(
               <button key={k} className={`tab${tab===k?" on":""}`} onClick={()=>setTab(k)}>{l}</button>
