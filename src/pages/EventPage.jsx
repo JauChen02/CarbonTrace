@@ -2,8 +2,9 @@
 // Manages tab state (report / overview / participants / invites / analytics)
 // and the Raw Data subpage with its breadcrumb navigation.
 // Passes onUpdate down to every tab so they can mutate event data.
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import T from '../theme';
+import { generatePDFReport } from '../utils/generatePDF';
 import Shell from '../components/layout/Shell';
 import { StatusBadge, KpiCard } from '../components/ui';
 import { computeStats } from '../utils/computeStats';
@@ -21,6 +22,10 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
   const TABS=[["report","Carbon Report"],["overview","Overview"],["participants","Participants"],["invite","Send Invites"],["analytics","Analytics"]];
 
   const isRawData=tab==="rawdata";
+
+  const handleDownloadPDF = useCallback(() => {
+    generatePDFReport(event, stats);
+  }, [event, stats]);
 
   const breadcrumb=(
     <span style={{display:"flex",alignItems:"center",gap:8}}>
@@ -62,7 +67,7 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
             <button className="btn-g" onClick={()=>setTab("rawdata")} style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
               📄 View Raw Data
             </button>
-            <button className="btn-p" style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
+            <button className="btn-p" onClick={handleDownloadPDF} style={{display:"flex",alignItems:"center",gap:6,fontSize:13}}>
               ⬇ Download PDF Report
             </button>
           </div>
