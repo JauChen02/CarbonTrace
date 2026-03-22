@@ -24,7 +24,15 @@ function loadEvents() {
     const stored = localStorage.getItem(STORAGE_KEY);
     if (stored) {
       const parsed = JSON.parse(stored);
-      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        // Merge any missing seed events into stored events
+        const storedIds = new Set(parsed.map(e => e.id));
+        const missingSeeds = SEED_EVENTS.filter(e => !storedIds.has(e.id));
+        if (missingSeeds.length > 0) {
+          return [...parsed, ...missingSeeds];
+        }
+        return parsed;
+      }
     }
   } catch (e) { /* ignore parse errors */ }
   return SEED_EVENTS;
