@@ -15,12 +15,10 @@ function DashboardPage({user,events,onNav,onOpen,onAdd,onLogout}){
   const concludedEmit = eventStats.filter(es => es.event.status === "concluded").reduce((a, es) => a + es.stats.extrapolated, 0);
   // Use actual participant count (survey + csv) instead of totalInvited
   const totalPx = eventStats.reduce((a, es) => a + es.stats.total, 0);
-  // Average response rate: only include events that have survey participants (surveyStats.total > 0)
-  // Events with only CSV imports should not affect the average response rate
-  const eventsWithSurvey = eventStats.filter(es => es.stats.surveyStats.total > 0);
-  const avgResp = eventsWithSurvey.length > 0 
-    ? eventsWithSurvey.reduce((a, es) => a + es.stats.responseRate, 0) / eventsWithSurvey.length 
-    : 0;
+  // Response rate = total survey submitted / total survey invited (aggregate across all events)
+  const totalSurveySubmitted = eventStats.reduce((a, es) => a + es.stats.surveyStats.count, 0);
+  const totalSurveyInvited = eventStats.reduce((a, es) => a + es.stats.surveyStats.total, 0);
+  const avgResp = totalSurveyInvited > 0 ? (totalSurveySubmitted / totalSurveyInvited) * 100 : 0;
   return(
     <Shell user={user} active="dashboard" events={events} onNav={onNav} onOpenEvent={onOpen} onLogout={onLogout} title="Events" actions={<button className="btn-p" onClick={()=>setModal(true)}>+ New Event</button>}>
       <div className="fu">
