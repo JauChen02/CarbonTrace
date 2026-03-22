@@ -21,15 +21,17 @@ import DataQualitySection from '../sections/DataQualitySection';
 function CarbonReportTab({event,stats,onUpdate,onViewRaw,dataSource,setDataSource}){
   const [activeSection,setActiveSection]=useState("All Sections");
 
-  const totalCO2_t=(stats.extrapolated/1000).toFixed(2);
-  const perPerson=(stats.avg/1000).toFixed(3);
-  const transportPct=stats.totalActual>0?((stats.transportTotal/stats.totalActual)*100).toFixed(0):"—";
-  const hotelPct=stats.totalActual>0?((stats.hotelTotal/stats.totalActual)*100).toFixed(0):"—";
-  const largestContrib=parseFloat(transportPct)>=parseFloat(hotelPct)?"Transport":"Accommodation";
-  const largestPct=Math.max(parseFloat(transportPct)||0,parseFloat(hotelPct)||0);
+  // Calculate totals based on data source - use actual calculated values
+  const totalCO2_t = (stats.totalActual / 1000).toFixed(2);
+  const extrapolatedCO2_t = (stats.extrapolated / 1000).toFixed(2);
+  const perPerson = stats.responders > 0 ? (stats.avg / 1000).toFixed(3) : "0.000";
+  const transportPct = stats.totalActual > 0 ? ((stats.transportTotal / stats.totalActual) * 100).toFixed(0) : "0";
+  const hotelPct = stats.totalActual > 0 ? ((stats.hotelTotal / stats.totalActual) * 100).toFixed(0) : "0";
+  const largestContrib = parseFloat(transportPct) >= parseFloat(hotelPct) ? "Transport" : "Accommodation";
+  const largestPct = Math.max(parseFloat(transportPct) || 0, parseFloat(hotelPct) || 0);
   
   const hasCSV = stats.csvStats?.hasData;
-  const hasSurvey = stats.surveyStats?.count > 0 || stats.surveyStats?.total > 0;
+  const hasSurvey = stats.surveyStats?.validCount > 0 || stats.surveyStats?.total > 0;
   
   const DATA_SOURCES = [
     {key:"all", label:"All Data", desc:"Survey + CSV"},
@@ -98,7 +100,7 @@ function CarbonReportTab({event,stats,onUpdate,onViewRaw,dataSource,setDataSourc
           {/* KPI row */}
           <div style={{display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:14,marginBottom:24}}>
             {[
-              {label:"Total Carbon Footprint",value:totalCO2_t,unit:"tonnes CO₂e",color:T.text},
+              {label:"Total Carbon Footprint",value:totalCO2_t,unit:`tonnes CO₂e (${stats.responders} valid entries)`,color:T.text},
               {label:"Per-Participant Emission",value:perPerson,unit:"tonnes CO₂e per person",color:T.accent},
               {label:"Largest Contributor",value:`${largestPct}%`,unit:largestContrib,color:"#ea580c"},
             ].map(item=>(
@@ -113,6 +115,28 @@ function CarbonReportTab({event,stats,onUpdate,onViewRaw,dataSource,setDataSourc
             ))}
             <OffsettingCard event={event} onUpdate={onUpdate}/>
           </div>
+          
+          {/* Source breakdown when showing all data */}
+          {dataSource === "all" && hasCSV && hasSurvey && (
+            <div style={{display:"grid",gridTemplateColumns:"repeat(2,1fr)",gap:14,marginBottom:24}}>
+              <div style={{background:T.accentLight,border:`1px solid ${T.accent}30`,borderRadius:10,padding:"14px 18px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                  <span style={{background:T.accent,color:"#fff",fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:4}}>SURVEY</span>
+                  <span style={{fontSize:12,color:T.textMid}}>{stats.surveyStats?.validCount || 0} valid entries</span>
+                </div>
+                <div style={{fontSize:22,fontWeight:700,color:T.accent,fontFamily:"'DM Mono',monospace"}}>{((stats.surveyStats?.totalEmissions || 0) / 1000).toFixed(2)} t</div>
+                <div style={{fontSize:11,color:T.textMid}}>Avg: {((stats.surveyStats?.avgEmissions || 0) / 1000).toFixed(3)} t/person</div>
+              </div>
+              <div style={{background:"#eff6ff",border:"1px solid #2563eb30",borderRadius:10,padding:"14px 18px"}}>
+                <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>
+                  <span style={{background:"#2563eb",color:"#fff",fontSize:10,fontWeight:700,padding:"2px 8px",borderRadius:4}}>CSV IMPORT</span>
+                  <span style={{fontSize:12,color:T.textMid}}>{stats.csvStats?.validCount || 0} valid entries</span>
+                </div>
+                <div style={{fontSize:22,fontWeight:700,color:"#2563eb",fontFamily:"'DM Mono',monospace"}}>{((stats.csvStats?.totalEmissions || 0) / 1000).toFixed(2)} t</div>
+                <div style={{fontSize:11,color:T.textMid}}>Avg: {((stats.csvStats?.avgEmissions || 0) / 1000).toFixed(3)} t/person</div>
+              </div>
+            </div>
+          )}
 
           {/* Info panels */}
           {[
@@ -123,7 +147,7 @@ function CarbonReportTab({event,stats,onUpdate,onViewRaw,dataSource,setDataSourc
             },
             {icon:"⚡",title:"Emission Factors Source",accent:T.accent,content:"All emission factors used in this report are sourced from DEFRA 2025 greenhouse gas conversion factors for company reporting.",link:"View DEFRA 2025 Conversion Factors →"},
             {icon:"⬇",title:"Data Transparency",accent:T.accent,content:"For full transparency and audit purposes, the complete raw participant data used in this report is available for download and review.",link:"View & Download Raw Data →",onLinkClick:onViewRaw},
-            {icon:"🔄",title:"Data Quality & Methodology",accent:"#2563eb",content:<span>This report is based on <strong style={{color:T.text}}>{stats.responders} valid data entries</strong> out of {stats.total} total. {dataSource === "all" && hasCSV && hasSurvey ? <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:"#dbeafe",color:"#1d4ed8",border:"1px solid rgba(37,99,235,0.2)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>Combined data</span> Includes {stats.surveyStats?.count || 0} survey responses + {stats.csvStats?.count || 0} CSV entries.</> : dataSource === "survey" ? <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:T.accentLight,color:T.accent,border:"1px solid rgba(15,118,110,0.2)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>Survey only</span> CSV imports excluded.</> : <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:"#fef3c7",color:"#92400e",border:"1px solid rgba(251,191,36,0.3)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>CSV only</span> Survey data excluded.</>}</span>},
+            {icon:"🔄",title:"Data Quality & Methodology",accent:"#2563eb",content:<span>This report is based on <strong style={{color:T.text}}>{stats.responders} valid data entries</strong> out of {stats.total} total. {dataSource === "all" && hasCSV && hasSurvey ? <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:"#dbeafe",color:"#1d4ed8",border:"1px solid rgba(37,99,235,0.2)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>Combined data</span> Includes {stats.surveyStats?.validCount || 0} survey + {stats.csvStats?.validCount || 0} CSV valid entries.</> : dataSource === "survey" ? <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:T.accentLight,color:T.accent,border:"1px solid rgba(15,118,110,0.2)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>Survey only</span> {stats.surveyStats?.validCount || 0} valid entries. CSV imports excluded.</> : <><span style={{display:"inline-flex",alignItems:"center",gap:5,background:"#fef3c7",color:"#92400e",border:"1px solid rgba(251,191,36,0.3)",borderRadius:6,padding:"1px 8px",fontSize:11.5,fontWeight:600,marginLeft:4,verticalAlign:"middle"}}>CSV only</span> {stats.csvStats?.validCount || 0} valid entries. Survey data excluded.</>}</span>},
           ].map(panel=>(
             <div key={panel.title} style={{background:T.bg,border:`1px solid ${T.border}`,borderRadius:10,padding:"18px 22px",marginBottom:12}}>
               <div style={{display:"flex",alignItems:"center",gap:8,marginBottom:8}}>

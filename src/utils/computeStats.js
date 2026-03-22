@@ -35,37 +35,78 @@ function classifyInvalidReasons(participants){
 
 // Parse CSV data into participant-like objects for calculations
 function parseCsvToParticipants(csvData) {
-  if (!csvData || !csvData.rows) return [];
+  if (!csvData || !csvData.rows || csvData.rows.length === 0) return [];
   
-  // Map CSV columns to participant fields (flexible column matching)
   const rows = csvData.rows;
   const headers = csvData.headers || [];
   
-  // Find column indices (case-insensitive)
-  const findCol = (names) => headers.findIndex(h => names.some(n => h.toLowerCase().includes(n.toLowerCase())));
-  const transportCol = findCol(['transport', 'mode', 'travel']);
-  const distanceCol = findCol(['distance', 'km', 'miles']);
-  const hotelCol = findCol(['hotel', 'nights', 'accommodation']);
-  const originCol = findCol(['origin', 'city', 'from', 'location']);
-  const nameCol = findCol(['name', 'participant', 'attendee']);
-  const emissionsCol = findCol(['emission', 'co2', 'carbon', 'kg']);
+  // Check if rows are objects (key-value pairs) or arrays (indexed by headers)
+  const isObjectFormat = typeof rows[0] === 'object' && !Array.isArray(rows[0]) && rows[0] !== null;
   
-  return rows.map((row, idx) => {
-    // If CSV has pre-calculated emissions, use those
-    const preCalcEmissions = emissionsCol >= 0 ? parseFloat(row[headers[emissionsCol]]) || 0 : null;
+  if (isObjectFormat) {
+    // Handle object format: { "Name": "John", "Transport": "Train", ... }
+    return rows.map((row, idx) => {
+      // Flexible key matching (case-insensitive, supports multiple key variants)
+      const getVal = (keys) => {
+        for (const key of keys) {
+          const found = Object.keys(row).find(k => k.toLowerCase().includes(key.toLowerCase()));
+          if (found && row[found] !== undefined && row[found] !== '') return row[found];
+        }
+        return null;
+      };
+      
+      const name = getVal(['name', 'participant', 'attendee']) || `CSV Entry ${idx + 1}`;
+      const origin = getVal(['origin', 'city', 'from', 'location']) || '';
+      const transport = getVal(['transport', 'mode', 'travel']) || 'Other';
+      const distanceRaw = getVal(['distance', 'km', 'miles']);
+      const distance = parseFloat(distanceRaw) || 0;
+      const hotelRaw = getVal(['hotel', 'nights', 'accommodation']);
+      const hotelNights = parseFloat(hotelRaw) || 0;
+      const emissionsRaw = getVal(['emission', 'co2', 'carbon', 'kg']);
+      const preCalcEmissions = emissionsRaw ? parseFloat(emissionsRaw) : null;
+      const email = getVal(['email', 'mail']) || '';
+      
+      return {
+        id: `csv-${idx}`,
+        name,
+        email,
+        origin,
+        transport,
+        distance,
+        hotelNights,
+        submitted: true,
+        isCSV: true,
+        preCalcEmissions
+      };
+    });
+  } else {
+    // Handle array format with headers: headers = ["Name", "Transport"], rows = [["John", "Train"], ...]
+    const findCol = (names) => headers.findIndex(h => names.some(n => h.toLowerCase().includes(n.toLowerCase())));
+    const transportCol = findCol(['transport', 'mode', 'travel']);
+    const distanceCol = findCol(['distance', 'km', 'miles']);
+    const hotelCol = findCol(['hotel', 'nights', 'accommodation']);
+    const originCol = findCol(['origin', 'city', 'from', 'location']);
+    const nameCol = findCol(['name', 'participant', 'attendee']);
+    const emissionsCol = findCol(['emission', 'co2', 'carbon', 'kg']);
+    const emailCol = findCol(['email', 'mail']);
     
-    return {
-      id: `csv-${idx}`,
-      name: nameCol >= 0 ? row[headers[nameCol]] || `CSV Entry ${idx + 1}` : `CSV Entry ${idx + 1}`,
-      origin: originCol >= 0 ? row[headers[originCol]] || 'CSV Import' : 'CSV Import',
-      transport: transportCol >= 0 ? row[headers[transportCol]] || 'Other' : 'Other',
-      distance: distanceCol >= 0 ? parseFloat(row[headers[distanceCol]]) || 0 : 0,
-      hotelNights: hotelCol >= 0 ? parseFloat(row[headers[hotelCol]]) || 0 : 0,
-      submitted: true,
-      isCSV: true,
-      preCalcEmissions
-    };
-  });
+    return rows.map((row, idx) => {
+      const preCalcEmissions = emissionsCol >= 0 ? parseFloat(row[emissionsCol]) || null : null;
+      
+      return {
+        id: `csv-${idx}`,
+        name: nameCol >= 0 ? row[nameCol] || `CSV Entry ${idx + 1}` : `CSV Entry ${idx + 1}`,
+        email: emailCol >= 0 ? row[emailCol] || '' : '',
+        origin: originCol >= 0 ? row[originCol] || '' : '',
+        transport: transportCol >= 0 ? row[transportCol] || 'Other' : 'Other',
+        distance: distanceCol >= 0 ? parseFloat(row[distanceCol]) || 0 : 0,
+        hotelNights: hotelCol >= 0 ? parseFloat(row[hotelCol]) || 0 : 0,
+        submitted: true,
+        isCSV: true,
+        preCalcEmissions
+      };
+    });
+  }
 }
 
 function computeStats(event, dataSource = "all") {
@@ -137,17 +178,44 @@ function computeStats(event, dataSource = "all") {
     return a+((EF[p.transport]||EF["Other"])*(p.distance||0)*2);
   }, 0);
   
+  // Calculate source-specific stats for breakdown display
+  const csvValidParticipants = csvParticipants.filter(p =>
+    p.submitted && p.origin && p.origin.trim() !== "" &&
+    p.transport && p.transport.trim() !== "" &&
+    (p.distance > 0 || p.transport === "Other" || (p.preCalcEmissions && p.preCalcEmissions > 0))
+  );
+  
+  const surveyValidParticipants = surveyParticipants.filter(p =>
+    p.submitted && p.origin && p.origin.trim() !== "" &&
+    p.transport && p.transport.trim() !== "" &&
+    (p.distance > 0 || p.transport === "Other")
+  );
+  
+  const csvTotalEmissions = csvValidParticipants.reduce((a, p) => {
+    if (p.preCalcEmissions && p.preCalcEmissions > 0) return a + p.preCalcEmissions;
+    return a + calcEm(p);
+  }, 0);
+  
+  const surveyTotalEmissions = surveyValidParticipants.reduce((a, p) => a + calcEm(p), 0);
+  
   // CSV-specific stats
   const csvStats = {
     count: csvParticipants.length,
+    validCount: csvValidParticipants.length,
     hasData: csvParticipants.length > 0,
-    fileName: event.csvData?.fileName || null
+    fileName: event.csvData?.fileName || null,
+    totalEmissions: csvTotalEmissions,
+    avgEmissions: csvValidParticipants.length > 0 ? csvTotalEmissions / csvValidParticipants.length : 0
   };
   
   // Survey-specific stats
+  const surveySubmittedCount = surveyParticipants.filter(p => p.submitted).length;
   const surveyStats = {
-    count: surveyParticipants.filter(p => p.submitted).length,
-    total: event.totalInvited || surveyParticipants.length
+    count: surveySubmittedCount,
+    validCount: surveyValidParticipants.length,
+    total: event.totalInvited || surveyParticipants.length,
+    totalEmissions: surveyTotalEmissions,
+    avgEmissions: surveyValidParticipants.length > 0 ? surveyTotalEmissions / surveyValidParticipants.length : 0
   };
   
   return {
