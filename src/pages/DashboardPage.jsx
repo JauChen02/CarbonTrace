@@ -15,7 +15,12 @@ function DashboardPage({user,events,onNav,onOpen,onAdd,onLogout}){
   const concludedEmit = eventStats.filter(es => es.event.status === "concluded").reduce((a, es) => a + es.stats.extrapolated, 0);
   // Use actual participant count (survey + csv) instead of totalInvited
   const totalPx = eventStats.reduce((a, es) => a + es.stats.total, 0);
-  const avgResp = events.length > 0 ? eventStats.reduce((a, es) => a + es.stats.responseRate, 0) / events.length : 0;
+  // Average response rate: only include events that have survey participants (surveyStats.total > 0)
+  // Events with only CSV imports should not affect the average response rate
+  const eventsWithSurvey = eventStats.filter(es => es.stats.surveyStats.total > 0);
+  const avgResp = eventsWithSurvey.length > 0 
+    ? eventsWithSurvey.reduce((a, es) => a + es.stats.responseRate, 0) / eventsWithSurvey.length 
+    : 0;
   return(
     <Shell user={user} active="dashboard" events={events} onNav={onNav} onOpenEvent={onOpen} onLogout={onLogout} title="Events" actions={<button className="btn-p" onClick={()=>setModal(true)}>+ New Event</button>}>
       <div className="fu">
@@ -48,9 +53,13 @@ function DashboardPage({user,events,onNav,onOpen,onAdd,onLogout}){
                 </div>
                 {/* Progress bar - always at same position */}
                 <ProgressBar value={s.responseRate}/>
-                {/* Stats footer */}
+                {/* Stats footer - Response rate based on survey only */}
                 <div style={{display:"flex",marginTop:"auto",paddingTop:14,borderTop:`1px solid ${T.border}`}}>
-                  {[["Responses",`${s.responders}/${s.total}`],["Rate",`${s.responseRate.toFixed(0)}%`],...(event.status==="concluded"?[["CO₂ est.",`${(s.extrapolated/1000).toFixed(2)}t`]]:[])].map(([lbl,val],j)=>(
+                  {[
+                    ["Survey Resp.",`${s.surveyStats.count}/${s.surveyStats.total}`],
+                    ["Rate",s.surveyStats.total > 0 ? `${s.responseRate.toFixed(0)}%` : "N/A"],
+                    ...(event.status==="concluded"?[["CO2 est.",`${(s.extrapolated/1000).toFixed(2)}t`]]:[])
+                  ].map(([lbl,val],j)=>(
                     <div key={lbl} style={{flex:1,borderLeft:j>0?`1px solid ${T.border}`:"none",paddingLeft:j>0?14:0}}>
                       <div style={{fontSize:11,color:T.textLight,fontWeight:500,marginBottom:2}}>{lbl}</div>
                       <div style={{fontSize:15.5,fontWeight:700,fontFamily:"'DM Mono',monospace"}}>{val}</div>
