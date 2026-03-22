@@ -60,7 +60,7 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
           <div style={{display:"flex",alignItems:"center",gap:24,fontSize:13,color:T.textMid,marginBottom:12}}>
             {event.date&&<span>📅 {event.date}{event.endDate?` - ${event.endDate}`:""}</span>}
             {event.location&&<span>📍 {event.location}</span>}
-            <span>👥 {stats.total} Participants</span>
+            <span>👥 {stats.total} Participants{stats.csvCount > 0 && stats.surveyCount > 0 ? ` (${stats.surveyCount} survey + ${stats.csvCount} import)` : ''}</span>
           </div>
           {event.description&&<p style={{fontSize:13.5,color:T.textLight,marginBottom:14}}>{event.description}</p>}
           <div style={{display:"flex",gap:10}}>

@@ -132,15 +132,22 @@ function computeStats(event, dataSource = "all") {
   );
   const submitted = allParticipants.filter(p=>p.submitted);
   
-  // For total count, use survey totalInvited + CSV count based on filter
+  // Total = actual participant count (not totalInvited which tracks invitations)
+  // Use actual array lengths for accurate participant counts
+  const surveyCount = surveyParticipants.length;
+  const csvCount = csvParticipants.length;
+  
   let total;
   if (dataSource === "survey") {
-    total = event.totalInvited || surveyParticipants.length;
+    total = surveyCount;
   } else if (dataSource === "csv") {
-    total = csvParticipants.length;
+    total = csvCount;
   } else {
-    total = (event.totalInvited || surveyParticipants.length) + csvParticipants.length;
+    total = surveyCount + csvCount;
   }
+  
+  // Track invited count separately (for response rate calculation on survey data)
+  const totalInvited = event.totalInvited || surveyCount;
   
   const responders = valid.length;
   
@@ -221,7 +228,11 @@ function computeStats(event, dataSource = "all") {
   return {
     submitted,valid,total,responders,totalActual,avg,extrapolated,
     extrapolationFactor,responseRate,validRate,invalid,invalidReasons,
-    tMap,hotelTotal,transportTotal,csvStats,surveyStats,dataSource
+    tMap,hotelTotal,transportTotal,csvStats,surveyStats,dataSource,
+    // Additional counts for UI display
+    surveyCount,
+    csvCount,
+    totalInvited
   };
 }
 

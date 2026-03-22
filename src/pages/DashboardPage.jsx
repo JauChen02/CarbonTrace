@@ -10,9 +10,12 @@ import { computeStats } from '../utils/computeStats';
 
 function DashboardPage({user,events,onNav,onOpen,onAdd,onLogout}){
   const [modal,setModal]=useState(false);
-  const concludedEmit=events.filter(e=>e.status==="concluded").reduce((a,e)=>a+computeStats(e).extrapolated,0);
-  const totalPx=events.reduce((a,e)=>a+e.totalInvited,0);
-  const avgResp=events.length>0?events.reduce((a,e)=>a+computeStats(e).responseRate,0)/events.length:0;
+  // Pre-compute stats for all events to avoid repeated calculations
+  const eventStats = events.map(e => ({ event: e, stats: computeStats(e) }));
+  const concludedEmit = eventStats.filter(es => es.event.status === "concluded").reduce((a, es) => a + es.stats.extrapolated, 0);
+  // Use actual participant count (survey + csv) instead of totalInvited
+  const totalPx = eventStats.reduce((a, es) => a + es.stats.total, 0);
+  const avgResp = events.length > 0 ? eventStats.reduce((a, es) => a + es.stats.responseRate, 0) / events.length : 0;
   return(
     <Shell user={user} active="dashboard" events={events} onNav={onNav} onOpenEvent={onOpen} onLogout={onLogout} title="Events" actions={<button className="btn-p" onClick={()=>setModal(true)}>+ New Event</button>}>
       <div className="fu">
