@@ -54,8 +54,8 @@ function EventPage({event,user,onUpdate,onBack,onNav,onOpenEvent,onLogout,events
         </div>
       )}
 
-      {/* Shared header for non-report tabs - event info and actions */}
-      {!isRawData && tab!=="report" && (
+      {/* Shared header for all tabs - event info and actions */}
+      {!isRawData && (
         <div style={{background:T.surface,borderBottom:`1px solid ${T.border}`,padding:"20px 30px 16px"}}>
           <div style={{display:"flex",alignItems:"center",gap:24,fontSize:13,color:T.textMid,marginBottom:12}}>
             {event.date&&<span>📅 {event.date}{event.endDate?` - ${event.endDate}`:""}</span>}
