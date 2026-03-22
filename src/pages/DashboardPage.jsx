@@ -30,17 +30,23 @@ function DashboardPage({user,events,onNav,onOpen,onAdd,onLogout}){
           {events.map(event=>{
             const s=computeStats(event);
             return(
-              <Card key={event.id} className="card-lift" onClick={()=>onOpen(event.id)} style={{padding:"22px 24px"}}>
-                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:10}}>
-                  <div style={{flex:1,paddingRight:10}}>
-                    <div style={{fontSize:15.5,fontWeight:700,marginBottom:3}}>{event.name}</div>
-                    <div style={{fontSize:12.5,color:T.textMid}}>📍 {event.location}</div>
+              <Card key={event.id} className="card-lift" onClick={()=>onOpen(event.id)} style={{padding:"22px 24px",display:"flex",flexDirection:"column",height:"100%"}}>
+                {/* Fixed height header section */}
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"flex-start",marginBottom:6}}>
+                  <div style={{flex:1,paddingRight:10,minWidth:0}}>
+                    <div style={{fontSize:15.5,fontWeight:700,marginBottom:3,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>{event.name}</div>
+                    <div style={{fontSize:12.5,color:T.textMid,overflow:"hidden",textOverflow:"ellipsis",whiteSpace:"nowrap"}}>📍 {event.location}</div>
                   </div>
                   <StatusBadge status={event.status}/>
                 </div>
-                <p style={{fontSize:13,color:T.textLight,marginBottom:18,lineHeight:1.5}}>{event.description}</p>
+                {/* Fixed height description area - 2 lines max */}
+                <div style={{height:40,marginBottom:14}}>
+                  <p style={{fontSize:13,color:T.textLight,lineHeight:1.5,margin:0,overflow:"hidden",display:"-webkit-box",WebkitLineClamp:2,WebkitBoxOrient:"vertical"}}>{event.description || "\u00A0"}</p>
+                </div>
+                {/* Progress bar - always at same position */}
                 <ProgressBar value={s.responseRate}/>
-                <div style={{display:"flex",marginTop:16,paddingTop:14,borderTop:`1px solid ${T.border}`}}>
+                {/* Stats footer */}
+                <div style={{display:"flex",marginTop:"auto",paddingTop:14,borderTop:`1px solid ${T.border}`}}>
                   {[["Responses",`${s.responders}/${s.total}`],["Rate",`${s.responseRate.toFixed(0)}%`],...(event.status==="concluded"?[["CO₂ est.",`${(s.extrapolated/1000).toFixed(2)}t`]]:[])].map(([lbl,val],j)=>(
                     <div key={lbl} style={{flex:1,borderLeft:j>0?`1px solid ${T.border}`:"none",paddingLeft:j>0?14:0}}>
                       <div style={{fontSize:11,color:T.textLight,fontWeight:500,marginBottom:2}}>{lbl}</div>
