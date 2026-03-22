@@ -61,26 +61,56 @@ function DashboardPage({user,events,onNav,onOpen,onAdd,onLogout}){
 
 function NewEventModal({onClose,onAdd}){
   const [f,setF]=useState({name:"",location:"",date:"",endDate:"",description:""});
+  const [error,setError]=useState("");
   const iS={width:"100%",background:T.bg,border:`1px solid ${T.border}`,borderRadius:8,padding:"9px 12px",fontSize:13.5,color:T.text};
   const lS={fontSize:12,fontWeight:600,color:T.textMid,display:"block",marginBottom:5};
+  
+  const handleCreate = () => {
+    if(!f.name.trim()) { setError("Event name is required"); return; }
+    if(!f.location.trim()) { setError("Location is required"); return; }
+    if(!f.date) { setError("Start date is required"); return; }
+    
+    const newEvent = {
+      id: `evt-${Date.now()}`,
+      name: f.name.trim(),
+      location: f.location.trim(),
+      date: f.date,
+      endDate: f.endDate || f.date,
+      description: f.description.trim(),
+      status: "upcoming",
+      participants: [],
+      totalInvited: 0,
+      offsettingStatus: "pending",
+      offsettingNote: "Strategy in development",
+      localTransport: [],
+      venueEnergy: { status: "estimated", gridFactor: 0.177, durationDays: 1, items: [] },
+      foodBev: { status: "estimated", wastePct: 15, localSourcingPct: 50, meals: [] },
+      materials: { status: "estimated", items: [] },
+      digital: { status: "estimated", items: [] }
+    };
+    
+    onAdd(newEvent);
+  };
+
   return(
-    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.3)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200}}>
-      <Card style={{padding:"32px 36px",width:480}} className="fu">
+    <div style={{position:"fixed",inset:0,background:"rgba(0,0,0,0.3)",display:"flex",alignItems:"center",justifyContent:"center",zIndex:200}} onClick={onClose}>
+      <Card style={{padding:"32px 36px",width:480}} className="fu" onClick={e=>e.stopPropagation()}>
         <h2 style={{fontSize:18,fontWeight:700,marginBottom:22}}>Create New Event</h2>
+        {error && <div style={{background:"#fef2f2",border:"1px solid #fecaca",borderRadius:6,padding:"10px 12px",marginBottom:16,fontSize:13,color:"#dc2626"}}>{error}</div>}
         <div style={{display:"flex",flexDirection:"column",gap:13}}>
-          {[["Event Name","name","text","e.g. Climate Summit 2026"],["Location","location","text","City, Country"]].map(([l,k,t,ph])=>(
-            <div key={k}><label style={lS}>{l}</label><input type={t} placeholder={ph} value={f[k]} onChange={e=>setF(p=>({...p,[k]:e.target.value}))} style={iS}/></div>
+          {[["Event Name *","name","text","e.g. Climate Summit 2026"],["Location *","location","text","City, Country"]].map(([l,k,t,ph])=>(
+            <div key={k}><label style={lS}>{l}</label><input type={t} placeholder={ph} value={f[k]} onChange={e=>{setF(p=>({...p,[k]:e.target.value}));setError("");}} style={iS}/></div>
           ))}
           <div style={{display:"flex",gap:10}}>
-            {[["Start Date","date"],["End Date","endDate"]].map(([l,k])=>(
-              <div key={k} style={{flex:1}}><label style={lS}>{l}</label><input type="date" value={f[k]} onChange={e=>setF(p=>({...p,[k]:e.target.value}))} style={iS}/></div>
+            {[["Start Date *","date"],["End Date","endDate"]].map(([l,k])=>(
+              <div key={k} style={{flex:1}}><label style={lS}>{l}</label><input type="date" value={f[k]} onChange={e=>{setF(p=>({...p,[k]:e.target.value}));setError("");}} style={iS}/></div>
             ))}
           </div>
-          <div><label style={lS}>Description</label><textarea rows={3} value={f.description} onChange={e=>setF(p=>({...p,description:e.target.value}))} style={{...iS,resize:"vertical"}}/></div>
+          <div><label style={lS}>Description</label><textarea rows={3} value={f.description} onChange={e=>setF(p=>({...p,description:e.target.value}))} style={{...iS,resize:"vertical"}} placeholder="Brief description of the event..."/></div>
         </div>
         <div style={{display:"flex",gap:10,marginTop:22}}>
           <button className="btn-g" onClick={onClose} style={{flex:1}}>Cancel</button>
-          <button className="btn-p" onClick={()=>{if(f.name&&f.location&&f.date)onAdd({id:`evt-${Date.now()}`,...f,status:"upcoming",participants:[],totalInvited:0,offsettingStatus:"pending",offsettingNote:"Strategy in development",localTransport:[],venueEnergy:{status:"estimated",gridFactor:0.17700,durationDays:1,items:[]},foodBev:{status:"estimated",wastePct:15,localSourcingPct:50,meals:[]},materials:{status:"estimated",items:[]},digital:{status:"estimated",items:[]}});}} style={{flex:2,justifyContent:"center"}}>Create Event</button>
+          <button className="btn-p" onClick={handleCreate} style={{flex:2,justifyContent:"center"}}>Create Event</button>
         </div>
       </Card>
     </div>
