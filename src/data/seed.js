@@ -86,6 +86,72 @@ const SEED_EVENTS = [
       { id: 3, name: "Uma P.", email: "uma@uva.nl", origin: "", transport: "", distance: 0, hotelNights: 0, submitted: false },
     ], totalInvited: 3, description: "Sustainability & green technology innovation summit"
   },
+  {
+    id: "evt-003", 
+    name: "Test Event - Mixed Sources", 
+    location: "Berlin, Germany", 
+    date: "2026-06-01", 
+    endDate: "2026-06-03", 
+    status: "upcoming", 
+    description: "Test event with both survey participants and CSV imported data for testing purposes",
+    offsettingStatus: "pending",
+    offsettingNote: "Testing offsetting strategy",
+    totalInvited: 8,
+    // Survey participants (5 participants - mix of submitted and pending)
+    participants: [
+      { id: 101, name: "Emma Schmidt", email: "emma@test.de", origin: "Munich, Germany", transport: "Train", distance: 585, hotelNights: 2, submitted: true },
+      { id: 102, name: "Lucas Weber", email: "lucas@test.de", origin: "Hamburg, Germany", transport: "Train", distance: 290, hotelNights: 2, submitted: true },
+      { id: 103, name: "Sophie Martin", email: "sophie@test.fr", origin: "Paris, France", transport: "Air travel", distance: 880, hotelNights: 3, submitted: true },
+      { id: 104, name: "Noah Anderson", email: "noah@test.se", origin: "", transport: "", distance: 0, hotelNights: 0, submitted: false },
+      { id: 105, name: "Mia Johnson", email: "mia@test.uk", origin: "", transport: "", distance: 0, hotelNights: 0, submitted: false },
+    ],
+    // CSV imported data (3 participants)
+    csvData: {
+      fileName: "external_attendees.csv",
+      uploadedAt: "2026-05-15T10:30:00Z",
+      rows: [
+        { "Name": "Kenji Tanaka", "Email": "kenji@corp.jp", "Origin": "Tokyo, Japan", "Transport": "Air travel", "Distance (km)": "8920", "Hotel Nights": "4" },
+        { "Name": "Anna Kowalski", "Email": "anna@corp.pl", "Origin": "Warsaw, Poland", "Transport": "Air travel", "Distance (km)": "520", "Hotel Nights": "2" },
+        { "Name": "Carlos Silva", "Email": "carlos@corp.br", "Origin": "Sao Paulo, Brazil", "Transport": "Air travel", "Distance (km)": "9850", "Hotel Nights": "5" },
+      ]
+    },
+    localTransport: [
+      { id: "lt-test-1", mode: "Bus", icon: "Bus", description: "Airport shuttle", oneWayKm: 25, factor: 0.02776, participantCount: 8, notes: "Return trip" },
+    ],
+    venueEnergy: {
+      status: "estimated",
+      gridFactor: 0.35000,
+      durationDays: 3,
+      items: [
+        { id: "ve-test-1", label: "Lighting", icon: "Lightbulb", desc: "Meeting rooms", kWh: 400, color: "#d97706" },
+        { id: "ve-test-2", label: "HVAC", icon: "Thermometer", desc: "Climate control", kWh: 900, color: "#ea580c" },
+      ],
+    },
+    foodBev: {
+      status: "estimated",
+      wastePct: 12,
+      localSourcingPct: 60,
+      meals: [
+        { id: "fb-test-1", label: "Lunch", icon: "Utensils", servings: 24, meatPct: 35, vegPct: 45, veganPct: 20, meatKg: 4.5, vegKg: 1.8, veganKg: 1.0 },
+        { id: "fb-test-2", label: "Coffee Breaks", icon: "Coffee", servings: 48, meatPct: 0, vegPct: 100, veganPct: 0, meatKg: 0, vegKg: 0.4, veganKg: 0.2 },
+      ],
+    },
+    materials: {
+      status: "estimated",
+      recyclingFactor: -0.2,
+      items: [
+        { id: "mt-test-1", label: "Name Badges", icon: "Tag", qty: 8, weightKg: 0.05, recyclePct: 80, emFactor: 3.5, color: "#7c3aed" },
+        { id: "mt-test-2", label: "Notebooks", icon: "BookOpen", qty: 8, weightKg: 0.15, recyclePct: 90, emFactor: 1.2, color: "#16a34a" },
+      ],
+    },
+    digital: {
+      status: "estimated",
+      items: [
+        { id: "dg-test-1", label: "Video Calls", icon: "Video", desc: "Remote participants", unit: "10 hours", kgCO2: 5.0, color: "#0284c7" },
+        { id: "dg-test-2", label: "Email", icon: "Mail", desc: "Event coordination", unit: "200 emails", kgCO2: 0.8, color: "#2563eb" },
+      ],
+    },
+  },
 ];
 
 const USERS = [{ id: "u1", name: "Dr.  Jhuokie Chen", email: "test@carbongpt.ai", password: "888888" }];
