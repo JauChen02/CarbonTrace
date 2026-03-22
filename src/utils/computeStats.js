@@ -162,7 +162,13 @@ function computeStats(event, dataSource = "all") {
   const avg = responders>0 ? totalActual/responders : 0;
   const extrapolated = avg*total;
   const extrapolationFactor = responders>0 ? total/responders : 1;
-  const responseRate = total>0 ? (submitted.length/total)*100 : 0;
+  
+  // Response rate is ONLY based on survey participants (not CSV imports)
+  // CSV imports are external data and should not inflate response rates
+  const surveySubmitted = surveyParticipants.filter(p => p.submitted).length;
+  const surveyTotal = event.totalInvited || surveyCount;
+  const responseRate = surveyTotal > 0 ? (surveySubmitted / surveyTotal) * 100 : 0;
+  
   const validRate = total>0 ? (responders/total)*100 : 0;
   const invalid = allParticipants.length - responders;
   const invalidReasons = classifyInvalidReasons(allParticipants.filter(p => !p.isCSV));
@@ -216,13 +222,13 @@ function computeStats(event, dataSource = "all") {
   };
   
   // Survey-specific stats
-  const surveySubmittedCount = surveyParticipants.filter(p => p.submitted).length;
   const surveyStats = {
-    count: surveySubmittedCount,
+    count: surveySubmitted,
     validCount: surveyValidParticipants.length,
-    total: event.totalInvited || surveyParticipants.length,
+    total: surveyTotal,
     totalEmissions: surveyTotalEmissions,
-    avgEmissions: surveyValidParticipants.length > 0 ? surveyTotalEmissions / surveyValidParticipants.length : 0
+    avgEmissions: surveyValidParticipants.length > 0 ? surveyTotalEmissions / surveyValidParticipants.length : 0,
+    responseRate: responseRate // Response rate is always survey-based
   };
   
   return {
